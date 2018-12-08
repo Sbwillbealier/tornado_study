@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页 | 模板</title>
+    <link rel="stylesheet" href="{{ static_url('css/index.css')}}">
+</head>
+<body>
+<h3>templates中的首页</h3>
+<ul>
+    {% if len(houses) > 0 %}
+    {% for house in houses %}
+    <li class="house-item">
+        <a href=""><img src="/static/images/home01.jpg" alt=""></a>
+        <div class="house-desc">
+            <div class="landlord-pic"><img src="{{ static_url('images/landlord01.png')}}" alt=""></div>
+            <div class="house-price">￥<span>{{ house["price1"]+house["price2"] }}</span>/晚</div>
+            <!--<div class="house-price">￥<span>{{ len("abc") }}</span>/晚</div>-->
+            <div class="house-intro">
+                <span class="house-title">{{ house['title'] }}</span>
+                <em>整套出租 - {{ house["score"] }}分/{{ house["comments"] }}点评 - {{ house["position"] }}</em>
+            </div>
+        </div>
+    </li>
+    {% end %}}
+    {% else %}
+    对不起，暂时没有房源
+    {% end %}
+</ul>
+</body>
+</html>
