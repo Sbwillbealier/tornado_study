@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加新房源</title>
+</head>
+<body>
+    <form action="" method="post">
+        <textarea name="text" id="" cols="30" rows="10"></textarea>
+        <br>
+        <input type="submit" value="提交">
+    </form>
+    <!--{{ text }}-->
+    <!--开启自动转义时，raw语句可以设置不被转义-->
+    <!--{% raw text %}-->
+    <!--关闭自动转义时，escape函数可以设置被转义-->
+    {{ escape(text)}}
+    <!--autoescape=None可以单独设置某一页不被转义-->
+    <!--{% autoescape None %}-->
+</body>
+</html>
