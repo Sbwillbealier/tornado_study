@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/insert" method="post">
+    <!--xsrf保护-->
+    {% module xsrf_form_html() %}
+    <input type="text" name="name" placeholder="姓名">
+    <input type="text" name="passwd" placeholder="密码">
+    <input type="text" name="mobile" placeholder="电话">
+    <input type="submit" value="添加">
+</form>
+</body>
+</html>

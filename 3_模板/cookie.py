@@ -17,12 +17,31 @@
         clear_all_cookies(path='/'， domain=None)
 
         # 设置、获取安全cookie
+        cookie_secret = 'brlXmGnISDK7FXKnJ9O4f+XbWSak6EkDkKLeQzWEjR0='
+
         set_secure_cookie(name, value, expires_days=30)
         get_secure_cookie(name, value=None, max_age_days=31)
+
+        # csrf攻击防护
+        xsrf_cookies = True
+
+        # 模板中应用xsrf保护
+        form表单中添加隐藏字段 {% module xsrf_form_html() %}
+
+        # 非模板应用
+            # 设置_xsrf的Cookie值, 在任意的handler中通过获取self.xsrf_token的值来生成_xsrf并设置cookie
+                # 一种动态请求，写专用的接口来设置_xsrf
+                # 一种获取静态文件请求，重写StaticFileHandler初始化时设置_xsrf
+
+        # 请求需携带_xsrf参数
+            # 请求体为form表单，可以在请求体中添加_xsrf参数
+            # 请求体为json或者xml格式，可以设置HTTP头X-XSRFToken来传递_xsrf值
+
 """
 import os
+import json
 import time
-from tornado.web import RequestHandler, StaticFileHandler
+from tornado.web import RequestHandler
 from tornado.httpserver import HTTPServer
 import tornado.ioloop
 import mysql.connector
@@ -79,6 +98,43 @@ class IndexHandler(RequestHandler):
         self.render('index.html', houses=houses, house_title_join=house_title_join)
 
 
+class XSRFTestHandler(RequestHandler):
+    """测试请求体携带_xsrf参数"""
+
+    def get(self):
+        # self.render('xsrf.html')
+        self.render('json.html')
+
+    def post(self):
+        # 从请求体中接收数据
+        # v1 = self.get_argument('k1')
+        # _xsrf = self.get_argument('_xsrf')
+        # print(v1)
+        # print(_xsrf)
+
+        # 从json中读取数据
+        if self.request.headers['Content-Type'] == ('application/json'):
+            json_data = self.request.body
+            json_data = json.loads(json_data.decode('utf-8'))
+            print(json_data)
+
+
+class XSRFTokenHandler(RequestHandler):
+    """专门用来设置_xsrf Cookie的接口"""
+
+    def get(self):
+        self.xsrf_token
+        self.write('ok')
+
+
+class StaticFileHandler(tornado.web.StaticFileHandler):
+    """重写StaticFileHandler，构造时触发设置_xsrf Cookie"""
+
+    def __init__(self):
+        super(StaticFileHandler, self).__init__()
+        self.xsrf_token
+
+
 class ClearOneCookieHandler(RequestHandler):
     """"清除一个cookie的handler"""
 
@@ -121,8 +177,11 @@ class NewHandler(RequestHandler):
         self.render('new.html', text=text)
 
 
-class InsertHandler(RequestHandler):
+class InsertUserHandler(RequestHandler):
     """添加用户handler"""
+
+    def get(self):
+        self.render('add_user.html')
 
     def post(self):
         name = self.get_argument('name')
@@ -170,18 +229,20 @@ class Application(tornado.web.Application):
 
         handlers = [
             ('/', IndexHandler),
-            ('/insert', InsertHandler),
+            ('/insert', InsertUserHandler),
             ('/get_house', GetHouseHandler),
             ('/clear_one', ClearOneCookieHandler),
             ('/clear_all', ClearAllCookieHandler),
             ('/count', SecureCookieHandler),
+            ('/test_xsrf', XSRFTestHandler),
         ]
 
         settings = {
             'template_path': os.path.join(current_path, 'templates'),
             'static_path': os.path.join(current_path, 'statics'),
             'debug': True,
-            'cookie_secret': 'brlXmGnISDK7FXKnJ9O4f+XbWSak6EkDkKLeQzWEjR0='
+            'cookie_secret': 'brlXmGnISDK7FXKnJ9O4f+XbWSak6EkDkKLeQzWEjR0=',
+            'xsrf_cookies': True,
         }
 
         super(Application, self).__init__(handlers, **settings)
